@@ -3,7 +3,7 @@ const User = require("../models/user");
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch(next);
+    .catch(next); // Pass errors to next middleware
 };
 
 const getUser = (req, res, next) => {
@@ -14,14 +14,14 @@ const getUser = (req, res, next) => {
       throw error;
     })
     .then((user) => res.status(200).send(user))
-    .catch(next);
+    .catch(next); // Pass errors to next middleware
 };
 
 const createUser = (req, res, next) => {
   const { name, avatar } = req.body;
   User.create({ name, avatar })
     .then((user) => res.status(201).send(user))
-    .catch(next);
+    .catch(next); // Pass errors to next middleware
 };
 
 module.exports = { getUsers, getUser, createUser };

@@ -3,7 +3,7 @@ const ClothingItem = require("../models/clothingItem");
 const getClothingItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch(next);
+    .catch(next); // Pass errors to next middleware
 };
 
 const createClothingItem = (req, res, next) => {
@@ -12,7 +12,7 @@ const createClothingItem = (req, res, next) => {
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(201).send(item))
-    .catch(next);
+    .catch(next); // Pass errors to next middleware
 };
 
 const deleteClothingItem = (req, res, next) => {
@@ -23,10 +23,9 @@ const deleteClothingItem = (req, res, next) => {
       throw error;
     })
     .then((item) => res.status(200).send(item))
-    .catch(next);
+    .catch(next); // Pass errors to next middleware
 };
 
-// Like an item
 const likeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
@@ -39,10 +38,9 @@ const likeItem = (req, res, next) => {
       throw error;
     })
     .then((item) => res.status(200).send(item))
-    .catch(next);
+    .catch(next); // Pass errors to next middleware
 };
 
-// Unlike an item
 const dislikeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
@@ -55,7 +53,7 @@ const dislikeItem = (req, res, next) => {
       throw error;
     })
     .then((item) => res.status(200).send(item))
-    .catch(next);
+    .catch(next); // Pass errors to next middleware
 };
 
 module.exports = { getClothingItems, createClothingItem, deleteClothingItem, likeItem, dislikeItem };

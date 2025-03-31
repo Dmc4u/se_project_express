@@ -1,5 +1,5 @@
-const handleErrors = (err, req, res, next) => {
-  console.error(err);
+const handleErrors = (err, req, res) => {
+  console.error(err); // Log the error
 
   if (err.name === "ValidationError") {
     return res.status(400).send({ message: "Invalid data" });
@@ -11,7 +11,7 @@ const handleErrors = (err, req, res, next) => {
     return res.status(err.statusCode).send({ message: err.message });
   }
 
-  res.status(500).send({ message: "Server error" });
+  return res.status(500).send({ message: "Server error" });
 };
 
 module.exports = handleErrors;

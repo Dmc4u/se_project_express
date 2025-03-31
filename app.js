@@ -1,12 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
-const handleError = require("./utils/errors");
 
 const app = express();
-
 const { PORT = 3001 } = process.env;
 
+// Connect to MongoDB
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
@@ -29,7 +28,12 @@ app.use((req, res, next) => {
 });
 
 app.use("/", mainRouter);
-app.use(handleError); // Error handling middleware
+
+// Error handling middleware
+app.use((err, req, res) => {
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).send({ message: err.message });
+});
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);

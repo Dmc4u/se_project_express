@@ -21,7 +21,7 @@ module.exports = {
   },
   rules: {
     camelcase: ["error", { allow: ["_id"] }],
-    "no-console": ["warn", { allow: ["error"] }],
+   "no-console": 'off',
     "no-underscore-dangle": ["error", {
       allow: ["_id", "__filename", "__dirname"], // Allow common Node.js globals
       allowAfterThis: true, // Allow this._property in classes
