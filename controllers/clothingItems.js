@@ -3,7 +3,13 @@ const ClothingItem = require("../models/clothingItem");
 const getClothingItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch(next); // Pass errors to next middleware
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Invalid user ID' });
+      } else {
+        next(err);
+      }
+    });
 };
 
 const createClothingItem = (req, res, next) => {

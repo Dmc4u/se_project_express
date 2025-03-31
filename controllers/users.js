@@ -3,7 +3,13 @@ const User = require("../models/user");
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch(next); // Pass errors to next middleware
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Invalid user ID' });
+      } else {
+        next(err);
+      }
+    });
 };
 
 const getUser = (req, res, next) => {
