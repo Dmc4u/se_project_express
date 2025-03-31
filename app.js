@@ -30,7 +30,7 @@ app.use((req, res, next) => {
 app.use("/", mainRouter);
 
 // Error handling middleware
-app.use((err, req, res) => {
+app.use((err, req, res,) => {
   const statusCode = err.statusCode || 500;
   res.status(statusCode).send({ message: err.message });
 });

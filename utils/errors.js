@@ -1,4 +1,4 @@
-const handleErrors = (err, req, res) => {
+const handleErrors = (err, req, res,) => {
   console.error(err); // Log the error
 
   if (err.name === "ValidationError") {

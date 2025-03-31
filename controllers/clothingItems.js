@@ -12,7 +12,13 @@ const createClothingItem = (req, res, next) => {
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(201).send(item))
-    .catch(next); // Pass errors to next middleware
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Validation error' });
+      } else {
+        next(err);
+      }
+    });
 };
 
 const deleteClothingItem = (req, res, next) => {
@@ -23,7 +29,13 @@ const deleteClothingItem = (req, res, next) => {
       throw error;
     })
     .then((item) => res.status(200).send(item))
-    .catch(next); // Pass errors to next middleware
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Validation error' });
+      } else {
+        next(err);
+      }
+    });
 };
 
 const likeItem = (req, res, next) => {
@@ -38,7 +50,13 @@ const likeItem = (req, res, next) => {
       throw error;
     })
     .then((item) => res.status(200).send(item))
-    .catch(next); // Pass errors to next middleware
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Validation error' });
+      } else {
+        next(err);
+      }
+    });
 };
 
 const dislikeItem = (req, res, next) => {
@@ -53,7 +71,13 @@ const dislikeItem = (req, res, next) => {
       throw error;
     })
     .then((item) => res.status(200).send(item))
-    .catch(next); // Pass errors to next middleware
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Validation error' });
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports = { getClothingItems, createClothingItem, deleteClothingItem, likeItem, dislikeItem };

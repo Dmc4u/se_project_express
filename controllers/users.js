@@ -14,14 +14,28 @@ const getUser = (req, res, next) => {
       throw error;
     })
     .then((user) => res.status(200).send(user))
-    .catch(next); // Pass errors to next middleware
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Invalid user ID' });
+      } else {
+        next(err);
+      }
+    });
 };
+
 
 const createUser = (req, res, next) => {
   const { name, avatar } = req.body;
   User.create({ name, avatar })
     .then((user) => res.status(201).send(user))
-    .catch(next); // Pass errors to next middleware
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Validation error' });
+      } else {
+        next(err);
+      }
+    });
 };
+
 
 module.exports = { getUsers, getUser, createUser };
