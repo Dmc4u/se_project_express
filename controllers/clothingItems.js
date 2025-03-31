@@ -47,7 +47,7 @@ const deleteClothingItem = (req, res, next) => {
 const likeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $addToSet: { likes: req.user._id } }, // Add user ID if not present
+    { $addToSet: { likes: req.user._id } },
     { new: true }
   )
     .orFail(() => {
@@ -57,8 +57,8 @@ const likeItem = (req, res, next) => {
     })
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Validation error' });
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Invalid item ID' });
       } else {
         next(err);
       }
