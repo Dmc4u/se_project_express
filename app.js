@@ -21,9 +21,16 @@ mongoose.connection.on("error", (err) =>
 );
 
 app.use(express.json());
+
+// Temporary authorization middleware
+app.use((req, res, next) => {
+  req.user = { _id: "67ea979672b7caf11a0392f3" }; // Fake user ID
+  next();
+});
+
 app.use("/", mainRouter);
 app.use(handleError); // Error handling middleware
 
 app.listen(PORT, () => {
-  console.log("Listening on port ${PORT}");
+  console.log(`Listening on port ${PORT}`);
 });

@@ -26,4 +26,36 @@ const deleteClothingItem = (req, res, next) => {
     .catch(next);
 };
 
-module.exports = { getClothingItems, createClothingItem, deleteClothingItem };
+// Like an item
+const likeItem = (req, res, next) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $addToSet: { likes: req.user._id } }, // Add user ID if not present
+    { new: true }
+  )
+    .orFail(() => {
+      const error = new Error("Clothing item not found");
+      error.statusCode = 404;
+      throw error;
+    })
+    .then((item) => res.status(200).send(item))
+    .catch(next);
+};
+
+// Unlike an item
+const dislikeItem = (req, res, next) => {
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $pull: { likes: req.user._id } }, // Remove user ID
+    { new: true }
+  )
+    .orFail(() => {
+      const error = new Error("Clothing item not found");
+      error.statusCode = 404;
+      throw error;
+    })
+    .then((item) => res.status(200).send(item))
+    .catch(next);
+};
+
+module.exports = { getClothingItems, createClothingItem, deleteClothingItem, likeItem, dislikeItem };
