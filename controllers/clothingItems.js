@@ -1,6 +1,6 @@
 const ClothingItem = require("../models/clothingItem");
 
-const getClothingItems = (req, res, next) => {
+const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
@@ -12,7 +12,7 @@ const getClothingItems = (req, res, next) => {
     });
 };
 
-const createClothingItem = (req, res, next) => {
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id; // Assume user ID is available in `req.user`
 
@@ -27,7 +27,7 @@ const createClothingItem = (req, res, next) => {
     });
 };
 
-const deleteClothingItem = (req, res, next) => {
+const deleteItem = (req, res, next) => {
   ClothingItem.findByIdAndDelete(req.params.itemId)
     .orFail(() => {
       const error = new Error("Clothing item not found");
@@ -86,4 +86,4 @@ const dislikeItem = (req, res, next) => {
     });
 };
 
-module.exports = { getClothingItems, createClothingItem, deleteClothingItem, likeItem, dislikeItem };
+module.exports = { getItems, createItem, deleteItem, likeItem, dislikeItem };
