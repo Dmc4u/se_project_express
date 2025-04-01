@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
+const { createNotFoundError, createBadRequestError, createUnauthorizedError, errorHandler, formatError } = require("./utils/errors"); // Import the error handler
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -29,11 +30,24 @@ app.use((req, res, next) => {
 
 app.use("/", mainRouter);
 
+   // Error handling middleware
+   app.use((err, req, res, next) => {
+    if (err.name === "CastError") {
+      res.status(400).json({ message: "Invalid ID format" });
+    } else if (err.name === "ValidationError") {
+      res.status(400).json({ message: "Validation failed", details: err.errors });
+    } else if (err.statusCode) {
+      res.status(err.statusCode).json({ message: err.message });
+    } else {
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+    next();
+  });
+
+
+
 // Error handling middleware
-app.use((err, req, res,) => {
-  const statusCode = err.statusCode || 500;
-  res.status(statusCode).send({ message: err.message });
-});
+app.use(createNotFoundError, createBadRequestError, createUnauthorizedError, formatError,  errorHandler); // Ensure this is after all routes
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);

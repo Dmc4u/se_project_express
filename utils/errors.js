@@ -1,17 +1,45 @@
-const handleErrors = (err, req, res,) => {
-  console.error(err); // Log the error
-
-  if (err.name === "ValidationError") {
-    return res.status(400).send({ message: "Invalid data" });
-  }
-  if (err.name === "CastError") {
-    return res.status(400).send({ message: "Invalid ID format" });
-  }
-  if (err.statusCode) {
-    return res.status(err.statusCode).send({ message: err.message });
-  }
-
-  return res.status(500).send({ message: "Server error" });
+// Define custom error functions
+const createNotFoundError = (message = "Resource not found") => {
+  const error = new Error(message);
+  error.statusCode = 404;
+  return error;
 };
 
-module.exports = handleErrors;
+const createBadRequestError = (message = "Bad request") => {
+  const error = new Error(message);
+  error.statusCode = 400;
+  return error;
+};
+
+const createUnauthorizedError = (message = "Unauthorized access") => {
+  const error = new Error(message);
+  error.statusCode = 401;
+  return error;
+};
+
+// Error formatting utility
+const formatError = (err) => ({
+    message: err.message || "An unknown error occurred",
+    statusCode: err.statusCode || 500,
+    stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
+  });
+
+// Middleware to handle errors
+const errorHandler = (err, req, res, next) => {
+  const formattedError = {
+    message: err.message || "An unknown error occurred",
+    statusCode: err.statusCode || 500,
+  };
+  res.status(formattedError.statusCode).json({
+    message: formattedError.message, // Ensure 'message' field in response
+  });
+  next();
+};
+
+module.exports = {
+  createNotFoundError,
+  createBadRequestError,
+  createUnauthorizedError,
+  formatError,
+  errorHandler,
+};
