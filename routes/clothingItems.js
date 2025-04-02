@@ -3,8 +3,7 @@ const {
   getItems,
   getItem,
   createItem,
-  updateItem,
-   deleteItem,
+  deleteItem,
   likeItem,
   dislikeItem,
 } = require("../controllers/clothingItems");
@@ -12,8 +11,7 @@ const {
 router.get("/", getItems);
 router.get("/:itemId", getItem);
 router.post("/", createItem);
-router.put("/:itemId", updateItem);
- router.delete("/:itemId", deleteItem);
+router.delete("/:itemId", deleteItem);
 router.put("/:itemId/likes", likeItem);
 router.delete("/:itemId/likes", dislikeItem);
 
