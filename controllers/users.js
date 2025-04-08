@@ -1,13 +1,12 @@
-const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 const {
   BAD_REQUEST,
-  NOT_FOUND,
   CONFLICT,
   UNAUTHORIZED,
-} = require("../utils/errors");
+} = require("../utils/errors"); // Removed unused NOT_FOUND
 
 const getUsers = (req, res, next) => {
   User.find({})
@@ -29,8 +28,8 @@ const getCurrentUser = (req, res, next) => {
       throw error;
     })
     .then((user) => {
-      const { password, email, ...userWithoutSensitive } = user.toObject();
-      res.send(userWithoutSensitive);
+      const { password, ...userWithoutPassword } = user.toObject();
+      res.send(userWithoutPassword);
     })
     .catch((err) => {
       if (err.name === "CastError") {
@@ -41,39 +40,35 @@ const getCurrentUser = (req, res, next) => {
     });
 };
 
-const createUser = (req, res, next) => {
-  const { name, avatar, email, password } = req.body;
 
-  if (!email || !password || !name) {
+const createUser = (req, res, next) => {
+  const { name, avatar, email, password: rawPassword } = req.body;
+
+  if (!email || !rawPassword || !name) {
     return res.status(BAD_REQUEST).json({
       message: "Name, email, and password are required",
     });
   }
 
-
-  bcrypt
-    .hash(password, 10)
-    .then((hashedPassword) =>
-      User.create({ name, avatar, email, password: hashedPassword })
-    )
+  return bcrypt
+    .hash(rawPassword, 10) // Return promise
+    .then((hashedPassword) => User.create({ name, avatar, email, password: hashedPassword }))
     .then((user) => {
-      const userWithoutPassword = user.toObject();
-      delete userWithoutPassword.password;
-      res.status(201).json(userWithoutPassword);
+      const { password, ...userWithoutPassword } = user.toObject();
+      return res.status(201).json(userWithoutPassword);
     })
     .catch((err) => {
-      console.error(err);
       if (err.code === 11000) {
         return res.status(CONFLICT).json({ message: "Email already exists" });
-      } else if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).json({ message: "Validation error" });
-      } else {
-        next(err);
       }
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).json({ message: "Validation error" });
+      }
+      return next(err);
     });
 };
 
-const login = (req, res, next) => {
+const login = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -82,18 +77,16 @@ const login = (req, res, next) => {
       .json({ message: "Email and password are required" });
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      return res.send({ token });
     })
-    .catch(() => {
-      res
-        .status(UNAUTHORIZED)
-        .json({ message: "Incorrect email or password" });
-    });
+    .catch(() =>
+      res.status(UNAUTHORIZED).json({ message: "Incorrect email or password" })
+    );
 };
 
 const updateUser = (req, res, next) => {
@@ -104,24 +97,19 @@ const updateUser = (req, res, next) => {
     { name, avatar },
     { new: true, runValidators: true, context: "query" }
   )
-    .orFail(() => {
-      const error = new Error("User not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
-    })
+    .orFail(() => Promise.reject(new Error("User not found")))
     .then((user) => {
       const { password, email, ...userWithoutSensitive } = user.toObject();
       res.send(userWithoutSensitive);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(BAD_REQUEST).json({
+        return res.status(BAD_REQUEST).json({
           message: "Validation failed",
           details: err.errors,
         });
-      } else {
-        next(err);
       }
+      return next(err);
     });
 };
 
