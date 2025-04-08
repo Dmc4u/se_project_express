@@ -21,6 +21,10 @@ mongoose.connection.on("error", (err) =>
 app.use(express.json());
 app.use(cors()); // Enable CORS
 
+app.post('/signin', require('./controllers/users').login);
+app.post('/signup', require('./controllers/users').createUser);
+app.get('/items', require('./controllers/clothingItems').getItems);
+
 // Authorization middleware for all routes
 app.use(auth);
 

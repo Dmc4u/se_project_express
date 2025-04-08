@@ -10,6 +10,8 @@ const {
   DEFAULT,
 } = require("../utils/errors");
 
+// Get current user function
+
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(() => {
@@ -30,23 +32,23 @@ const getCurrentUser = (req, res, next) => {
     });
 };
 
-const createUser = (req, res, next) => {
-  const { name, avatar, email, password } = req.body;
+// Create user function
 
-  if (!email || !password || !name) {
+const createUser = (req, res, next) => {
+  const { name, avatar, email, password: rawPassword } = req.body;
+
+  if (!email || !rawPassword || !name) {
     return res.status(BAD_REQUEST).json({
       message: "Name, email, and password are required",
     });
   }
 
-  bcrypt
-    .hash(password, 10)
-    .then((hashedPassword) =>
-      User.create({ name, avatar, email, password: hashedPassword })
-    )
+  return bcrypt
+    .hash(rawPassword, 10) // Return promise
+    .then((hashedPassword) => User.create({ name, avatar, email, password: hashedPassword }))
     .then((user) => {
       const { password, ...userWithoutPassword } = user.toObject();
-      res.status(201).json(userWithoutPassword);
+      return res.status(201).json(userWithoutPassword);
     })
     .catch((err) => {
       if (err.code === 11000) {
@@ -59,7 +61,8 @@ const createUser = (req, res, next) => {
     });
 };
 
-const login = (req, res, next) => {
+// Login function
+const login = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -68,22 +71,25 @@ const login = (req, res, next) => {
       .json({ message: "Email and password are required" });
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      res.status(200).send({ token });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+      return res.send({ token });
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        res.status(UNAUTHORIZED).json({ message: err.message });
-      } else {
-        res.status(DEFAULT).json({ message: "Internal Server Error" });
+        return res
+          .status(UNAUTHORIZED)
+          .json({ message: "Incorrect email or password" });
       }
+      return res
+        .status(DEFAULT)
+        .json({ message: "An unexpected error occurred" });
     });
 };
 
+
+// Update user function
 const updateUser = (req, res, next) => {
   const { name, avatar } = req.body;
 
@@ -92,21 +98,18 @@ const updateUser = (req, res, next) => {
     { name, avatar },
     { new: true, runValidators: true, context: "query" }
   )
-    .orFail(() => {
-      const error = new Error("User not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
-    })
+    .orFail(() => Promise.reject(new Error("User not found")))
     .then((user) => {
       const { password, email, ...userWithoutSensitive } = user.toObject();
       res.send(userWithoutSensitive);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(BAD_REQUEST).json({ message: "Validation failed" });
-      } else {
-        next(err);
+        return res.status(BAD_REQUEST).json({
+          message: "Validation failed",
+        });
       }
+      return next(err);
     });
 };
 
