@@ -1,5 +1,5 @@
 const ClothingItem = require("../models/clothingItem");
-const { NOT_FOUND } = require("../utils/errors");
+const { NOT_FOUND, FORBIDDEN } = require("../utils/errors");
 
 const getItems = (req, res, next) => {
   ClothingItem.find({})
@@ -28,11 +28,19 @@ const createItem = (req, res, next) => {
 };
 
 const deleteItem = (req, res, next) => {
-  ClothingItem.findByIdAndDelete(req.params.itemId)
+  ClothingItem.findById(req.params.itemId)
     .orFail(() => {
       const error = new Error("Clothing item not found");
       error.statusCode = NOT_FOUND;
       throw error;
+    })
+    .then((item) => {
+      if (item.owner.toString() !== req.user._id) {
+        const error = new Error("You do not have permission to delete this item");
+        error.statusCode = FORBIDDEN;
+        throw error;
+      }
+      return ClothingItem.findByIdAndDelete(req.params.itemId);
     })
     .then((item) => res.json(item)) // ✅ 200 is implied
     .catch(next);

@@ -1,7 +1,14 @@
-const router = require("express").Router();
+const express = require("express");
+const { createUser, login } = require("../controllers/users");
 const userRouter = require("./users");
 const clothingItemRouter = require("./clothingItems");
 const { NOT_FOUND } = require("../utils/errors");
+
+const router = express.Router();
+
+// Add routes for signup and signin
+router.post('/signup', createUser);
+router.post('/signin', login);
 
 router.use("/users", userRouter);
 router.use("/items", clothingItemRouter);

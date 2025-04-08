@@ -1,7 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors"); // Import cors package
 const mainRouter = require("./routes/index");
-const { BAD_REQUEST, DEFAULT } = require("./utils/errors"); // Corrected import
+const { BAD_REQUEST, DEFAULT } = require("./utils/errors");
+const auth = require('./middlewares/auth'); // Import the auth middleware
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -17,12 +19,15 @@ mongoose.connection.on("error", (err) =>
 );
 
 app.use(express.json());
+app.use(cors()); // Enable CORS
 
-// Temporary authorization middleware
-app.use((req, res, next) => {
-  req.user = { _id: "67ea979672b7caf11a0392f3" }; // Fake user ID
-  next();
-});
+// Routes that do not require authorization
+app.post('/signin', require('./controllers/users').login);
+app.post('/signup', require('./controllers/users').createUser);
+app.get('/items', require('./controllers/clothingItems').getItems);
+
+// Authorization middleware for all other routes
+app.use(auth);
 
 app.use("/", mainRouter);
 
@@ -46,7 +51,6 @@ app.use((err, req, res, next) => { // `next` re-added but safely ignored by ESLi
 
   return res.status(DEFAULT).json({ message: "Internal Server Error" });
 });
-
 
 // Start the server
 app.listen(PORT, () => {
