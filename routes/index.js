@@ -10,6 +10,9 @@ const router = express.Router();
 router.post('/signup', createUser);
 router.post('/signin', login);
 
+// Add route for getting items
+router.get('/items', require('../controllers/clothingItems').getItems);
+
 router.use("/users", userRouter);
 router.use("/items", clothingItemRouter);
 

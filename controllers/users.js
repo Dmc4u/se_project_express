@@ -6,20 +6,9 @@ const {
   BAD_REQUEST,
   CONFLICT,
   UNAUTHORIZED,
-  NOT_FOUND,  // Add NOT_FOUND
+  NOT_FOUND,
+  DEFAULT,
 } = require("../utils/errors");
-
-const getUsers = (req, res, next) => {
-  User.find({})
-    .then((users) => {
-      const sanitizedUsers = users.map((user) => {
-        const { password, email, ...rest } = user.toObject();
-        return rest;
-      });
-      res.send(sanitizedUsers);
-    })
-    .catch(next);
-};
 
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
@@ -42,20 +31,22 @@ const getCurrentUser = (req, res, next) => {
 };
 
 const createUser = (req, res, next) => {
-  const { name, avatar, email, password: rawPassword } = req.body;
+  const { name, avatar, email, password } = req.body;
 
-  if (!email || !rawPassword || !name) {
+  if (!email || !password || !name) {
     return res.status(BAD_REQUEST).json({
       message: "Name, email, and password are required",
     });
   }
 
-  return bcrypt
-    .hash(rawPassword, 10) // Return promise
-    .then((hashedPassword) => User.create({ name, avatar, email, password: hashedPassword }))
+  bcrypt
+    .hash(password, 10)
+    .then((hashedPassword) =>
+      User.create({ name, avatar, email, password: hashedPassword })
+    )
     .then((user) => {
       const { password, ...userWithoutPassword } = user.toObject();
-      return res.status(201).json(userWithoutPassword);
+      res.status(201).json(userWithoutPassword);
     })
     .catch((err) => {
       if (err.code === 11000) {
@@ -68,7 +59,7 @@ const createUser = (req, res, next) => {
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -77,16 +68,20 @@ const login = (req, res) => {
       .json({ message: "Email and password are required" });
   }
 
-  return User.findUserByCredentials(email, password)
+  User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      return res.send({ token });
+      res.status(200).send({ token });
     })
-    .catch(() =>
-      res.status(UNAUTHORIZED).json({ message: "Incorrect email or password" })
-    );
+    .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        res.status(UNAUTHORIZED).json({ message: err.message });
+      } else {
+        res.status(DEFAULT).json({ message: "Internal Server Error" });
+      }
+    });
 };
 
 const updateUser = (req, res, next) => {
@@ -97,24 +92,25 @@ const updateUser = (req, res, next) => {
     { name, avatar },
     { new: true, runValidators: true, context: "query" }
   )
-    .orFail(() => Promise.reject(new Error("User not found")))
+    .orFail(() => {
+      const error = new Error("User not found");
+      error.statusCode = NOT_FOUND;
+      throw error;
+    })
     .then((user) => {
       const { password, email, ...userWithoutSensitive } = user.toObject();
       res.send(userWithoutSensitive);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).json({
-          message: "Validation failed",
-          details: err.errors,
-        });
+        res.status(BAD_REQUEST).json({ message: "Validation failed" });
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };
 
 module.exports = {
-  getUsers,
   getCurrentUser,
   createUser,
   login,

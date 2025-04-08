@@ -21,12 +21,7 @@ mongoose.connection.on("error", (err) =>
 app.use(express.json());
 app.use(cors()); // Enable CORS
 
-// Routes that do not require authorization
-app.post('/signin', require('./controllers/users').login);
-app.post('/signup', require('./controllers/users').createUser);
-app.get('/items', require('./controllers/clothingItems').getItems);
-
-// Authorization middleware for all other routes
+// Authorization middleware for all routes
 app.use(auth);
 
 app.use("/", mainRouter);
@@ -42,7 +37,6 @@ app.use((err, req, res, next) => { // `next` re-added but safely ignored by ESLi
   if (err.name === "ValidationError") {
     return res.status(BAD_REQUEST).json({
       message: "Validation failed",
-      details: err.errors,
     });
   }
   if (err.statusCode) {
@@ -50,6 +44,7 @@ app.use((err, req, res, next) => { // `next` re-added but safely ignored by ESLi
   }
 
   return res.status(DEFAULT).json({ message: "Internal Server Error" });
+  // I got:  47:3  error  Unreachable code when I added next(); based on your recommendation. Please help me on how to fix this. Thanks.
 });
 
 // Start the server
