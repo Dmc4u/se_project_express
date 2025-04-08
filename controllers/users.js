@@ -6,7 +6,8 @@ const {
   BAD_REQUEST,
   CONFLICT,
   UNAUTHORIZED,
-} = require("../utils/errors"); // Removed unused NOT_FOUND
+  NOT_FOUND,  // Add NOT_FOUND
+} = require("../utils/errors");
 
 const getUsers = (req, res, next) => {
   User.find({})
@@ -39,7 +40,6 @@ const getCurrentUser = (req, res, next) => {
       }
     });
 };
-
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password: rawPassword } = req.body;
