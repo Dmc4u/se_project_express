@@ -1,9 +1,12 @@
+require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors"); // Import cors package
+const cors = require("cors");
+const { errors } = require("celebrate");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 const mainRouter = require("./routes/index");
-const { BAD_REQUEST, DEFAULT } = require("./utils/errors");
-const auth = require('./middlewares/auth'); // Import the auth middleware
+const errorHandler = require("./middlewares/error-handler");
+const auth = require("./middlewares/auth");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -19,37 +22,30 @@ mongoose.connection.on("error", (err) =>
 );
 
 app.use(express.json());
-app.use(cors()); // Enable CORS
+app.use(cors());
 
-app.post('/signin', require('./controllers/users').login);
-app.post('/signup', require('./controllers/users').createUser);
-app.get('/items', require('./controllers/clothingItems').getItems);
+// Enable the request logger before all route handlers
+app.use(requestLogger);
+
+// Public routes
+app.post("/signin", require("./controllers/users").login);
+app.post("/signup", require("./controllers/users").createUser);
+app.get("/items", require("./controllers/clothingItems").getItems);
 
 // Authorization middleware for all routes
 app.use(auth);
 
+// Main router
 app.use("/", mainRouter);
 
+// Enable the error logger after all route handlers
+app.use(errorLogger);
+
+// Celebrate error handler
+app.use(errors());
+
 // Centralized error handling middleware
-/* eslint-disable-next-line no-unused-vars */
-app.use((err, req, res, next) => { // `next` re-added but safely ignored by ESLint
-  console.error(err);
-
-  if (err.name === "CastError") {
-    return res.status(BAD_REQUEST).json({ message: "Invalid ID format" });
-  }
-  if (err.name === "ValidationError") {
-    return res.status(BAD_REQUEST).json({
-      message: "Validation failed",
-    });
-  }
-  if (err.statusCode) {
-    return res.status(err.statusCode).json({ message: err.message });
-  }
-
-  return res.status(DEFAULT).json({ message: "Internal Server Error" });
-  // I got:  47:3  error  Unreachable code when I added next(); based on your recommendation. Please help me on how to fix this. Thanks.
-});
+app.use(errorHandler);
 
 // Start the server
 app.listen(PORT, () => {

@@ -1,17 +1,48 @@
-// Define constants for HTTP status codes
-const BAD_REQUEST = 400;
-const NOT_FOUND = 404;
-const DEFAULT = 500;
-const UNAUTHORIZED = 401; // Added constant for Unauthorized
-const CONFLICT = 409; // Added constant for Conflict
-const FORBIDDEN = 403; // Added constant for Forbidden
+// BadRequestError — Status code 400
+class BadRequestError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 400;
+  }
+}
 
-// Export the constants
+// UnauthorizedError — Status code 401
+class UnauthorizedError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 401;
+  }
+}
+
+// ForbiddenError — Status code 403
+class ForbiddenError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 403;
+  }
+}
+
+// NotFoundError — Status code 404
+class NotFoundError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 404;
+  }
+}
+
+// ConflictError — Status code 409
+class ConflictError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 409;
+  }
+}
+
+// Export all custom error constructors
 module.exports = {
-    BAD_REQUEST,
-    NOT_FOUND,
-    DEFAULT,
-    UNAUTHORIZED,
-    CONFLICT,
-    FORBIDDEN,
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
 };

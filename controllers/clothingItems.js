@@ -1,5 +1,9 @@
 const ClothingItem = require("../models/clothingItem");
-const { NOT_FOUND, FORBIDDEN } = require("../utils/errors");
+const {
+  NotFoundError,
+  ForbiddenError,
+  BadRequestError,
+} = require("../utils/errors");
 
 const getItems = (req, res, next) => {
   ClothingItem.find({})
@@ -10,12 +14,16 @@ const getItems = (req, res, next) => {
 const getItem = (req, res, next) => {
   ClothingItem.findById(req.params.itemId)
     .orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
+      throw new NotFoundError("Clothing item not found");
     })
     .then((item) => res.json(item)) // ✅ 200 is implied
-    .catch(next);
+    .catch((err) => {
+      if (err.name === "CastError") {
+        next(new BadRequestError("Invalid ID format"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const createItem = (req, res, next) => {
@@ -24,21 +32,23 @@ const createItem = (req, res, next) => {
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(201).json(item)) // ✅ 201 for creation
-    .catch(next);
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        next(new BadRequestError("Validation failed"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const deleteItem = (req, res, next) => {
   ClothingItem.findById(req.params.itemId)
     .orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
+      throw new NotFoundError("Clothing item not found");
     })
     .then((item) => {
       if (item.owner.toString() !== req.user._id) {
-        const error = new Error("You do not have permission to delete this item");
-        error.statusCode = FORBIDDEN;
-        throw error;
+        throw new ForbiddenError("You do not have permission to delete this item");
       }
       return ClothingItem.findByIdAndDelete(req.params.itemId);
     })
@@ -53,9 +63,7 @@ const likeItem = (req, res, next) => {
     { new: true }
   )
     .orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
+      throw new NotFoundError("Clothing item not found");
     })
     .then((item) => res.json(item)) // ✅ 200 is implied
     .catch(next);
@@ -68,9 +76,7 @@ const dislikeItem = (req, res, next) => {
     { new: true }
   )
     .orFail(() => {
-      const error = new Error("Clothing item not found");
-      error.statusCode = NOT_FOUND;
-      throw error;
+      throw new NotFoundError("Clothing item not found");
     })
     .then((item) => res.json(item)) // ✅ 200 is implied
     .catch(next);

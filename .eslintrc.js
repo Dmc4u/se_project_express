@@ -28,5 +28,11 @@ module.exports = {
         allow: ["_id"], // Only allow '_id'
       },
     ],
+    "no-unused-vars": [
+      "error",
+      {
+        argsIgnorePattern: "next", // Ignore unused 'next' arguments in middleware
+      },
+    ],
   },
 };
