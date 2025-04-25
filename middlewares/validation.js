@@ -73,15 +73,16 @@ module.exports.validateLogin = celebrate({
 });
 
 // Validate IDs
- module.exports.validateId = celebrate({
-   params: Joi.object().keys({
-     _id: Joi.string().length(24).hex().required().messages({
-      "string.empty": 'The "id" field must be filled in',
-      "string.length": 'The "id" field must be 24 characters long',
-      "string.hex": 'The "id" field must be a hexadecimal value',
+module.exports.validateId = celebrate({
+  params: Joi.object().keys({
+    itemId: Joi.string().length(24).hex().required().messages({
+      "string.empty": 'The "itemId" field must be filled in',
+      "string.length": 'The "itemId" field must be 24 characters long',
+      "string.hex": 'The "itemId" field must be a hexadecimal value',
     }),
-   }),
- });
+  }),
+});
+
 
 // const userSchema = Joi.string().length(24).hex().required().messages({
 //     'string.empty': 'The "user id" must be filled in',
