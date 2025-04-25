@@ -73,12 +73,27 @@ module.exports.validateLogin = celebrate({
 });
 
 // Validate IDs
-module.exports.validateId = celebrate({
-  params: Joi.object().keys({
-    id: Joi.string().length(24).hex().required().messages({
-      "string.empty": 'The "id" field must be filled in',
-      "string.length": 'The "id" field must be 24 characters long',
-      "string.hex": 'The "id" field must be a hexadecimal value',
-    }),
-  }),
-});
+// module.exports.validateId = celebrate({
+//   params: Joi.object().keys({
+//     _id: Joi.string().length(24).hex().required().messages({
+//       "string.empty": 'The "id" field must be filled in',
+//       "string.length": 'The "id" field must be 24 characters long',
+//       "string.hex": 'The "id" field must be a hexadecimal value',
+//     }),
+//   }),
+// });
+
+const userSchema = Joi.string().length(24).hex().required().messages({
+    'string.empty': 'The "user id" must be filled in',
+    'string.length': 'The "user id" must be 24 characters long',
+    'string.hex': 'The "user id" must be a hexadecimal value',
+  })
+
+
+module.exports.validateId = (req, res, next) => {
+  const { error } = userSchema.validate(req.user._id);
+  if (error) {
+    return res.status(401).json({ message: 'Invalid user', details: error.details });
+  }
+  next();
+};
