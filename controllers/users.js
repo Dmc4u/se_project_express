@@ -16,8 +16,9 @@ const getCurrentUser = (req, res, next) => {
       throw new NotFoundError("User not found");
     })
     .then((user) => {
-      const { password, ...userWithoutPassword } = user.toObject();
-      res.send(userWithoutPassword);
+      const userObj = user.toObject();
+      delete userObj.password;
+      res.send(userObj);
     })
     .catch((err) => {
       if (err.name === "CastError") {
@@ -42,8 +43,9 @@ const createUser = (req, res, next) => {
       User.create({ name, avatar, email, password: hashedPassword })
     )
     .then((user) => {
-      const { password, ...userWithoutPassword } = user.toObject();
-      res.status(201).json(userWithoutPassword);
+      const userObj = user.toObject();
+      delete userObj.password;
+      res.status(201).json(userObj);
     })
     .catch((err) => {
       if (err.code === 11000) {
@@ -91,8 +93,10 @@ const updateUser = (req, res, next) => {
       throw new NotFoundError("User not found");
     })
     .then((user) => {
-      const { password, email, ...userWithoutSensitive } = user.toObject();
-      res.send(userWithoutSensitive);
+      const userObj = user.toObject();
+      delete userObj.password;
+      delete userObj.email;
+      res.send(userObj);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {

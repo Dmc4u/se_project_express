@@ -27,6 +27,13 @@ app.use(cors());
 // Enable the request logger before all route handlers
 app.use(requestLogger);
 
+// ❗❗❗ Crash Test Route — Add this BEFORE signin/signup
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Server will crash now');
+  }, 0);
+});
+
 // Public routes
 app.post("/signin", require("./controllers/users").login);
 app.post("/signup", require("./controllers/users").createUser);

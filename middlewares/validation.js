@@ -1,4 +1,4 @@
-const { Joi, celebrate, errors } = require("celebrate");
+const { Joi, celebrate } = require("celebrate");
 const validator = require("validator");
 
 // Custom URL validator using the 'validator' package
@@ -9,7 +9,7 @@ const validateURL = (value, helpers) => {
   return helpers.error("string.uri");
 };
 
-// Middleware to log validation errors globally
+// Middleware to log validation errors globally (optional but useful)
 module.exports.logValidationErrors = (err, req, res, next) => {
   if (err.joi) {
     console.error("Validation error details:", err.joi.details);
@@ -31,9 +31,6 @@ module.exports.validateCardBody = celebrate({
     }),
     weather: Joi.string().required().valid("hot", "warm", "cold").messages({
       "string.empty": 'The "weather" field must be filled in',
-    }),
-    token: Joi.string().required().messages({
-      "string.empty": 'The "token" field must be filled in',
     }),
   }),
 });
@@ -72,7 +69,7 @@ module.exports.validateLogin = celebrate({
   }),
 });
 
-// Validate IDs
+// Validate IDs in request parameters
 module.exports.validateId = celebrate({
   params: Joi.object().keys({
     itemId: Joi.string().length(24).hex().required().messages({
@@ -82,19 +79,3 @@ module.exports.validateId = celebrate({
     }),
   }),
 });
-
-
-// const userSchema = Joi.string().length(24).hex().required().messages({
-//     'string.empty': 'The "user id" must be filled in',
-//     'string.length': 'The "user id" must be 24 characters long',
-//     'string.hex': 'The "user id" must be a hexadecimal value',
-//   })
-
-
-// module.exports.validateId = (req, res, next) => {
-//   const { error } = userSchema.validate(req.user._id);
-//   if (error) {
-//     return res.status(401).json({ message: 'Invalid user', details: error.details });
-//   }
-//   next();
-// };
