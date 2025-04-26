@@ -22,10 +22,9 @@ const getCurrentUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        next(new BadRequestError("Invalid ID format"));
-      } else {
-        next(err);
+        return next(new BadRequestError("Invalid ID format"));
       }
+      return next(err);
     });
 };
 
@@ -45,16 +44,16 @@ const createUser = (req, res, next) => {
     .then((user) => {
       const userObj = user.toObject();
       delete userObj.password;
-      res.status(201).json(userObj);
+      return res.status(201).json(userObj);
     })
     .catch((err) => {
       if (err.code === 11000) {
-        next(new ConflictError("Email already exists"));
-      } else if (err.name === "ValidationError") {
-        next(new BadRequestError("Validation error"));
-      } else {
-        next(err);
+        return next(new ConflictError("Email already exists"));
       }
+      if (err.name === "ValidationError") {
+        return next(new BadRequestError("Validation error"));
+      }
+      return next(err);
     });
 };
 
@@ -71,14 +70,13 @@ const login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      return res.send({ token });
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        next(new UnauthorizedError("Incorrect email or password"));
-      } else {
-        next(err);
+        return next(new UnauthorizedError("Incorrect email or password"));
       }
+      return next(err);
     });
 };
 
@@ -102,10 +100,9 @@ const updateUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        next(new BadRequestError("Validation failed"));
-      } else {
-        next(err);
+        return next(new BadRequestError("Validation failed"));
       }
+      return next(err);
     });
 };
 
