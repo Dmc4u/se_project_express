@@ -9,7 +9,7 @@ const validateURL = (value, helpers) => {
   return helpers.error("string.uri");
 };
 
-// Middleware to log validation errors globally (optional but useful)
+// Middleware to log validation errors globally
 module.exports.logValidationErrors = (err, req, res, next) => {
   if (err.joi) {
     console.error("Validation error details:", err.joi.details);
@@ -35,7 +35,7 @@ module.exports.validateCardBody = celebrate({
   }),
 });
 
-// Validate user creation
+// Validate user creation (signup)
 module.exports.validateUserBody = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30).messages({
@@ -56,7 +56,7 @@ module.exports.validateUserBody = celebrate({
   }),
 });
 
-// Validate login credentials
+// Validate login credentials (signin)
 module.exports.validateLogin = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email().messages({
@@ -76,6 +76,19 @@ module.exports.validateId = celebrate({
       "string.empty": 'The "itemId" field must be filled in',
       "string.length": 'The "itemId" field must be 24 characters long',
       "string.hex": 'The "itemId" field must be a hexadecimal value',
+    }),
+  }),
+});
+
+// ✅ New: Validate updating user profile (PATCH /users/me)
+module.exports.validateUpdateUser = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30).messages({
+      "string.min": 'The minimum length of the "name" field is 2',
+      "string.max": 'The maximum length of the "name" field is 30',
+    }),
+    avatar: Joi.string().custom(validateURL).messages({
+      "string.uri": 'The "avatar" field must be a valid URL',
     }),
   }),
 });

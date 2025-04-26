@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file */
+
 // BadRequestError — Status code 400
 class BadRequestError extends Error {
   constructor(message) {

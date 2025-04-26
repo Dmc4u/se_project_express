@@ -18,7 +18,7 @@ const getCurrentUser = (req, res, next) => {
     .then((user) => {
       const userObj = user.toObject();
       delete userObj.password;
-      res.send(userObj);
+      return res.send(userObj);
     })
     .catch((err) => {
       if (err.name === "CastError") {
@@ -68,7 +68,9 @@ const login = (req, res, next) => {
 
   User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
       res.send({ token });
     })
     .catch((err) => {
@@ -96,7 +98,7 @@ const updateUser = (req, res, next) => {
       const userObj = user.toObject();
       delete userObj.password;
       delete userObj.email;
-      res.send(userObj);
+      return res.send(userObj);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {

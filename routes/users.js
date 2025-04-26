@@ -1,11 +1,10 @@
 const express = require("express");
 const { getCurrentUser, updateUser } = require("../controllers/users");
-const { validateUserBody } = require("../middlewares/validation");
+const { validateUpdateUser } = require("../middlewares/validation");
 
 const router = express.Router();
 
-router.get("/me", getCurrentUser); //ask question about validateId that is not used in this route
-// router.get("/me", validateId, getCurrentUser); //ask question about validateId that is not used in this route
-router.patch("/me", validateUserBody, updateUser);
+router.get("/me", getCurrentUser);
+router.patch("/me", validateUpdateUser, updateUser);
 
 module.exports = router;
