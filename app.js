@@ -3,16 +3,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
-const rateLimiter = require("./middlewares/rateLimiter"); // ✅ NEW
 const { errors } = require("celebrate");
+const rateLimiter = require("./middlewares/rateLimiter");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 const mainRouter = require("./routes/index");
 const errorHandler = require("./middlewares/error-handler");
 const auth = require("./middlewares/auth");
 const { login, createUser } = require("./controllers/users");
 const { getItems } = require("./controllers/clothingItems");
-
-// ✅ Import your validation middlewares
 const {
   validateLogin,
   validateUserBody,
@@ -34,11 +32,11 @@ mongoose.connection.on("error", (err) =>
 // Middlewares
 app.use(express.json());
 app.use(cors());
-app.use(helmet());       // ✅ Set security headers
-app.use(rateLimiter);    // ✅ Limit incoming requests
+app.use(helmet());
+app.use(rateLimiter);
 app.use(requestLogger);
 
-// ❗ Crash test route (before routes)
+// ❗ Crash test route
 app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('Server will crash now');
@@ -50,15 +48,15 @@ app.post("/signin", validateLogin, login);
 app.post("/signup", validateUserBody, createUser);
 app.get("/items", getItems);
 
-// Protected routes (after auth)
+// Protected routes
 app.use(auth);
 app.use("/", mainRouter);
 
 // Error Handling
 app.use(errorLogger);
-app.use(logValidationErrors); // Logs celebrate validation errors
-app.use(errors());            // Celebrate errors handler
-app.use(errorHandler);         // Centralized error handler
+app.use(logValidationErrors);
+app.use(errors());
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
