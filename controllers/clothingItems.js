@@ -5,42 +5,44 @@ const {
   BadRequestError,
 } = require("../utils/errors");
 
+// Get all clothing items
 const getItems = (req, res, next) => {
   ClothingItem.find({})
-    .then((items) => res.json(items)) // ✅ 200 is implied
+    .then((items) => res.json(items))
     .catch(next);
 };
 
+// Get single item
 const getItem = (req, res, next) => {
   ClothingItem.findById(req.params.itemId)
     .orFail(() => {
       throw new NotFoundError("Clothing item not found");
     })
-    .then((item) => res.json(item)) // ✅ 200 is implied
+    .then((item) => res.json(item))
     .catch((err) => {
       if (err.name === "CastError") {
-        next(new BadRequestError("Invalid ID format"));
-      } else {
-        next(err);
+        return next(new BadRequestError("Invalid ID format"));
       }
+      return next(err);
     });
 };
 
+// Create a new clothing item
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
   ClothingItem.create({ name, weather, imageUrl, owner })
-    .then((item) => res.status(201).json(item)) // ✅ 201 for creation
+    .then((item) => res.status(201).json(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        next(new BadRequestError("Validation failed"));
-      } else {
-        next(err);
+        return next(new BadRequestError("Validation failed"));
       }
+      return next(err);
     });
 };
 
+// Delete clothing item
 const deleteItem = (req, res, next) => {
   ClothingItem.findById(req.params.itemId)
     .orFail(() => {
@@ -52,10 +54,11 @@ const deleteItem = (req, res, next) => {
       }
       return ClothingItem.findByIdAndDelete(req.params.itemId);
     })
-    .then((item) => res.json(item)) // ✅ 200 is implied
+    .then((item) => res.json(item))
     .catch(next);
 };
 
+// Like a clothing item
 const likeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
@@ -65,10 +68,11 @@ const likeItem = (req, res, next) => {
     .orFail(() => {
       throw new NotFoundError("Clothing item not found");
     })
-    .then((item) => res.json(item)) // ✅ 200 is implied
+    .then((item) => res.json(item))
     .catch(next);
 };
 
+// Dislike a clothing item
 const dislikeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
@@ -78,7 +82,7 @@ const dislikeItem = (req, res, next) => {
     .orFail(() => {
       throw new NotFoundError("Clothing item not found");
     })
-    .then((item) => res.json(item)) // ✅ 200 is implied
+    .then((item) => res.json(item))
     .catch(next);
 };
 

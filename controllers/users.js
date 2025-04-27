@@ -9,7 +9,7 @@ const {
   NotFoundError,
 } = require("../utils/errors");
 
-// Get current user function
+// Get current user
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(() => {
@@ -28,7 +28,7 @@ const getCurrentUser = (req, res, next) => {
     });
 };
 
-// Create user function
+// Create user
 const createUser = (req, res, next) => {
   const { name, avatar, email, password: rawPassword } = req.body;
 
@@ -38,9 +38,7 @@ const createUser = (req, res, next) => {
 
   bcrypt
     .hash(rawPassword, 10)
-    .then((hashedPassword) =>
-      User.create({ name, avatar, email, password: hashedPassword })
-    )
+    .then((hashedPassword) => User.create({ name, avatar, email, password: hashedPassword }))
     .then((user) => {
       const userObj = user.toObject();
       delete userObj.password;
@@ -57,7 +55,7 @@ const createUser = (req, res, next) => {
     });
 };
 
-// Login function
+// Login
 const login = (req, res, next) => {
   const { email, password } = req.body;
 
@@ -67,9 +65,7 @@ const login = (req, res, next) => {
 
   User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
       return res.send({ token });
     })
     .catch((err) => {
@@ -80,7 +76,7 @@ const login = (req, res, next) => {
     });
 };
 
-// Update user function
+// Update user
 const updateUser = (req, res, next) => {
   const { name, avatar } = req.body;
 

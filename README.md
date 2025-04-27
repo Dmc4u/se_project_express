@@ -1,6 +1,6 @@
 # WTWR (What to Wear?) — Back End
 
-## Project Overview
+## 📚 Project Overview
 
 **WTWR (What to Wear?)** is the back-end server for a weather-based clothing recommendation application.
 
@@ -10,29 +10,33 @@ This project focuses on:
 - Managing **user authentication** and **authorization** using **JWT**.
 - Implementing **CRUD operations** for clothing items.
 - Connecting to a **MongoDB** database using **Mongoose**.
-- Applying best practices for **validation**, **error handling**, and **security**.
-- Deploying the API on a remote server with **PM2** for process management and crash recovery.
+- Applying best practices for **validation**, **error handling**, **security headers**, and **rate limiting**.
+- Deploying the API on a remote server with **Nginx** and **PM2** for process management and crash recovery.
 
 The goal is to provide an API that allows users to **register**, **log in**, **manage their wardrobe**, and **get clothing recommendations** based on the weather.
 
 ---
 
-## Technologies & Tools Used
+## ⚙️ Technologies & Tools Used
 
 - **Backend Framework**: Express.js
-- **Database**: MongoDB with Mongoose ODM
+- **Database**: MongoDB (Mongoose ODM)
 - **Authentication**: JWT (JSON Web Tokens)
 - **Validation**: Celebrate (Joi)
+- **Security Enhancements**:
+  - Helmet (sets secure HTTP headers)
+  - express-rate-limit (limits repeated requests)
+- **Logging**: Winston and express-winston
 - **Error Handling**: Centralized error middleware
 - **Environment Variables**: dotenv
-- **Logging**: Winston and express-winston
 - **Process Management**: PM2
+- **Web Server**: Nginx (for production reverse proxy)
 - **Development Tools**: Nodemon, ESLint (Airbnb + Prettier)
 - **Version Control**: Git and GitHub
 
 ---
 
-## API Endpoints
+## 🔥 API Endpoints
 
 | Method | Endpoint                  | Description                       | Auth Required |
 |--------|----------------------------|-----------------------------------|---------------|
@@ -49,15 +53,18 @@ The goal is to provide an API that allows users to **register**, **log in**, **m
 
 ---
 
-## Deployment Information
+## 🚀 Deployment Information
 
-- **Domain**: [https://www.mywears.crabdance.com/](https://www.mywears.crabdance.com/)  
-  
+- **Frontend Domain**: [https://mywears.crabdance.com](https://mywears.crabdance.com)
+- **Backend API Domain**: [https://api.mywears.crabdance.com](https://api.mywears.crabdance.com)
 
-- **Crash Test**:
-  - To test crash recovery, send a GET request to:
-    ```
-    https://www.mywears.crabdance.com/crash-test
+### ⚡ Crash Test
+
+To simulate a crash and verify PM2 automatically restarts the backend server:
+
+```bash
+GET https://api.mywears.crabdance.com/crash-test
+
     ```
   - The server will intentionally crash.
   - PM2 will automatically restart the server after a crash.
