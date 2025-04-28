@@ -32,10 +32,14 @@ mongoose.connection.on("error", (err) =>
 // Middlewares
 app.use(express.json());
 // app.use(cors());
-const cors = require('cors');
+
 app.use(cors({
-  origin: 'https://mywears.crabdance.com',
+  origin: ['http://localhost:3000', 'https://mywears.crabdance.com'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
+
 app.use(helmet());
 app.use(rateLimiter);
 app.use(requestLogger);
