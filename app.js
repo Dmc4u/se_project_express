@@ -20,15 +20,6 @@ const {
 const app = express();
 const { PORT = 3001, MONGO_URL = "mongodb://127.0.0.1:27017/wtwr_db" } = process.env;
 
-// ✅ Correct CORS setup
-const corsOptions = {
-  origin: [
-    'https://mywears.crabdance.com',
-    'http://localhost:3000',
-  ],
-  credentials: true,
-};
-
 // Connect to MongoDB
 mongoose.connect(MONGO_URL)
   .then(() => console.log("Connected to DB"))
@@ -40,7 +31,12 @@ mongoose.connection.on("error", (err) =>
 
 // Middlewares
 app.use(express.json());
-app.use(cors(corsOptions)); // ✅ Corrected here!
+
+// ✅ Simpler CORS - allow only production frontend
+app.use(cors({
+  origin: 'https://mywears.crabdance.com',
+}));
+
 app.use(helmet());
 app.use(rateLimiter);
 app.use(requestLogger);
