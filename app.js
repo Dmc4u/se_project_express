@@ -31,17 +31,16 @@ mongoose.connection.on("error", (err) =>
 
 // Middlewares
 app.use(express.json());
-
-// ✅ Simpler CORS - allow only production frontend
+// app.use(cors());
+const cors = require('cors');
 app.use(cors({
   origin: 'https://mywears.crabdance.com',
 }));
-
 app.use(helmet());
 app.use(rateLimiter);
 app.use(requestLogger);
 
-// Crash test route
+// ❗ Crash test route
 app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('Server will crash now');
