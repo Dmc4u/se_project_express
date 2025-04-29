@@ -12,17 +12,18 @@ const {
 // Get current user
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(() => Promise.reject(new NotFoundError("User not found"))) // ✅ use Promise.reject
+    .orFail(() => Promise.reject(new NotFoundError("User not found")))
     .then((user) => {
       const userObj = user.toObject();
       delete userObj.password;
-      return res.send(userObj);
+      res.send(userObj);
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return next(new BadRequestError("Invalid ID format"));
+        next(new BadRequestError("Invalid ID format"));
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };
 
@@ -31,7 +32,8 @@ const createUser = (req, res, next) => {
   const { name, avatar, email, password: rawPassword } = req.body;
 
   if (!email || !rawPassword || !name) {
-    return next(new BadRequestError("Name, email, and password are required"));
+    next(new BadRequestError("Name, email, and password are required"));
+    return;
   }
 
   bcrypt
@@ -40,16 +42,16 @@ const createUser = (req, res, next) => {
     .then((user) => {
       const userObj = user.toObject();
       delete userObj.password;
-      return res.status(201).json(userObj);
+      res.status(201).json(userObj);
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return next(new ConflictError("Email already exists"));
+        next(new ConflictError("Email already exists"));
+      } else if (err.name === "ValidationError") {
+        next(new BadRequestError("Validation error"));
+      } else {
+        next(err);
       }
-      if (err.name === "ValidationError") {
-        return next(new BadRequestError("Validation error"));
-      }
-      return next(err);
     });
 };
 
@@ -58,19 +60,21 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return next(new BadRequestError("Email and password are required"));
+    next(new BadRequestError("Email and password are required"));
+    return;
   }
 
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
-      return res.send({ token });
+      res.send({ token });
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        return next(new UnauthorizedError("Incorrect email or password"));
+        next(new UnauthorizedError("Incorrect email or password"));
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };
 
@@ -83,18 +87,19 @@ const updateUser = (req, res, next) => {
     { name, avatar },
     { new: true, runValidators: true, context: "query" }
   )
-    .orFail(() => Promise.reject(new NotFoundError("User not found"))) // ✅ use Promise.reject
+    .orFail(() => Promise.reject(new NotFoundError("User not found")))
     .then((user) => {
       const userObj = user.toObject();
       delete userObj.password;
       delete userObj.email;
-      return res.send(userObj);
+      res.send(userObj);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return next(new BadRequestError("Validation failed"));
+        next(new BadRequestError("Validation failed"));
+      } else {
+        next(err);
       }
-      return next(err);
     });
 };
 
